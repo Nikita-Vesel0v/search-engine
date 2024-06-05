@@ -1,31 +1,59 @@
 package search
 
-fun main() {
-    println("Enter the number of people:")
-    val size = readln().toInt()
+class SearchEngine {
+    private var dataBase = mutableListOf<String>()
+    private var resultSearch = mutableListOf<String>()
 
-    println("Enter all people:")
-    val db = List(size) { readln() }
+    fun fillDataBase() {
+        println("Enter the number of people:")
+        val size = readln().toInt()
 
-    println("\nEnter the number of search queries:")
-    val numberQuery = readln().toInt()
+        println("Enter all people:")
+        for (i in 0 until size) dataBase.add(readln())
+    }
+    fun start() {
+        while (true) {
+            println("""
+                
+                === Menu ===
+                1. Find a person
+                2. Print all people
+                0. Exit
+            """.trimIndent())
+            when (readln()) {
+                "1" -> find()
+                "2" -> printDatabase()
+                "0" -> break
+                else -> println("\nIncorrect option! Try again.")
+            }
+        }
+        println("\nBye!")
 
-    var wordFind: String
-    var found: Boolean
-    val resultSearch = mutableListOf<String>()
+    }
 
-    for (i in 1..numberQuery) {
-        println("\nEnter data to search people:")
-        wordFind = readln().lowercase()
-        found = false
-        db.forEach { if (it.lowercase().contains(wordFind)) { resultSearch.add(it); found = true } }
-
-        println(if(!found) {
-            "No matching people found."
+    private fun printDatabase() {
+        if (dataBase.isNotEmpty()) println("\n=== List of people ===\n${dataBase.joinToString("\n")}")
+        else println("\nNo people in data base")
+    }
+    private fun clearResultSearch() = resultSearch.clear()
+    private fun find() {
+        println("\nEnter a name or email to search all suitable people.")
+        val query = readln()
+        dataBase.forEach { if (it.lowercase().contains(query.lowercase())) { resultSearch.add(it)} }
+        printResultOfSearch()
+        clearResultSearch()
+    }
+    private fun printResultOfSearch() {
+        if(resultSearch.isNotEmpty()) {
+            println(resultSearch.joinToString("\n"))
         } else {
-            "\nPeople found:\n${resultSearch.joinToString(separator = "\n")}"
-        })
-        resultSearch.clear()
+            println("No matching people found.")
+        }
     }
 }
 
+fun main() {
+    val searchEngine = SearchEngine()
+    searchEngine.fillDataBase()
+    searchEngine.start()
+}
