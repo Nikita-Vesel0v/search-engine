@@ -4,7 +4,7 @@ import java.io.File
 
 class SearchEngine {
     private var dataBase = mutableMapOf<String, MutableList<Int>>()
-    private var resultSearch = mutableListOf<Int>()
+    private var resultSearch = listOf<Int>()
     private var fileData = listOf<String>()
 
     fun fillDataBase(fileName: String) {
@@ -42,9 +42,19 @@ class SearchEngine {
             }
         }
         println("\nBye!")
-
+    }
+    private fun findAll(query: List<String>) {
+        query.forEach { word ->
+             if (word in dataBase.keys) {
+                 resultSearch =
+                     if (resultSearch.isEmpty()) dataBase[word]!!
+                     else resultSearch.intersect((dataBase[word] ?: emptySet()).toSet()).toList()
+             }
+        }
     }
 
+    private fun findAny(query: List<String>) { TODO() }
+    private fun findNone(query: List<String>) { TODO() }
     private fun printDatabase() {
         if (fileData.isNotEmpty()) {
             println("\n=== List of people ===")
@@ -53,12 +63,17 @@ class SearchEngine {
         else println("\nNo people in data base")
         println()
     }
-    private fun clearResultSearch() = resultSearch.clear()
+    private fun clearResultSearch() = resultSearch.toMutableList().clear()
     private fun find() {
+        println("\nSelect a matching strategy: ALL, ANY, NONE")
+        val strategy = readln()
         println("\nEnter a name or email to search all suitable people.")
-        val query = readln().lowercase()
-        dataBase.keys.forEach {
-            if (it == query) { resultSearch = dataBase[it]!! }
+        val query = readln().lowercase().split(" ")
+        when (strategy) {
+            "ALL" -> findAll(query)
+            "ANY" -> findAny(query)
+            "NONE" -> findNone(query)
+            else -> error("Unknown strategy!")
         }
         printResultOfSearch()
         clearResultSearch()
