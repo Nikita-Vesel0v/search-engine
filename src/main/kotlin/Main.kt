@@ -1,20 +1,21 @@
 package search
 
+import java.io.File
+
 class SearchEngine {
     private var dataBase = mutableListOf<String>()
     private var resultSearch = mutableListOf<String>()
 
-    fun fillDataBase() {
-        println("Enter the number of people:")
-        val size = readln().toInt()
+    fun fillDataBase(fileName: String) {
+        val workingDirectory = System.getProperty ("user.dir")
+        val separator = File.separator
+        val absolutePath = "${workingDirectory}${separator}src${separator}main${separator}resources${separator}$fileName"
 
-        println("Enter all people:")
-        for (i in 0 until size) dataBase.add(readln())
+        File(absolutePath).readLines().forEach { dataBase.add(it) }
     }
-    fun start() {
+    fun search() {
         while (true) {
             println("""
-                
                 === Menu ===
                 1. Find a person
                 2. Print all people
@@ -32,7 +33,7 @@ class SearchEngine {
     }
 
     private fun printDatabase() {
-        if (dataBase.isNotEmpty()) println("\n=== List of people ===\n${dataBase.joinToString("\n")}")
+        if (dataBase.isNotEmpty()) println("\n=== List of people ===\n${dataBase.joinToString("\n")}\n")
         else println("\nNo people in data base")
     }
     private fun clearResultSearch() = resultSearch.clear()
@@ -52,8 +53,8 @@ class SearchEngine {
     }
 }
 
-fun main() {
+fun main(args: Array<String>) {
     val searchEngine = SearchEngine()
-    searchEngine.fillDataBase()
-    searchEngine.start()
+    searchEngine.fillDataBase(args[1])
+    searchEngine.search()
 }
