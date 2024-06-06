@@ -3,18 +3,27 @@ package search
 import java.io.File
 
 class SearchEngine {
-    private var dataBase = mutableMapOf<Int, List<String>>()
-    private var resultSearch = mutableListOf<String>()
+    private var dataBase = mutableMapOf<String, MutableList<Int>>()
+    private var resultSearch = mutableListOf<Int>()
+    private var fileData = listOf<String>()
 
     fun fillDataBase(fileName: String) {
         val workingDirectory = System.getProperty ("user.dir")
         val separator = File.separator
-        val absolutePath = "$workingDirectory${separator}src${separator}resources${separator}$fileName"
+        val absolutePath = "${workingDirectory}${separator}src${separator}main${separator}resources${separator}$fileName"
+        var index = 0
 
-        val textFile = File(absolutePath).readLines()
-
-        for (i in textFile.indices) {
-            dataBase[i] = textFile[i].split(" ")
+        fileData = File(absolutePath).readLines()
+        fileData.forEach {
+            val line = it.split(" ")
+            for (word in line) {
+                if (!dataBase.containsKey(word.lowercase())) {
+                    dataBase[word.lowercase()] = mutableListOf(index)
+                } else {
+                    dataBase[word.lowercase()]?.add(index)
+                }
+            }
+            index++
         }
     }
     fun search() {
@@ -37,9 +46,9 @@ class SearchEngine {
     }
 
     private fun printDatabase() {
-        if (dataBase.isNotEmpty()) {
+        if (fileData.isNotEmpty()) {
             println("\n=== List of people ===")
-            dataBase.values.forEach { println(it.joinToString(" ")) }
+            fileData.forEach { println(it) }
         }
         else println("\nNo people in data base")
         println()
@@ -48,20 +57,20 @@ class SearchEngine {
     private fun find() {
         println("\nEnter a name or email to search all suitable people.")
         val query = readln().lowercase()
-        dataBase.values.forEach {
-            for (word in it) {
-                if (word.lowercase() == query) { resultSearch.add(it.joinToString(" ")) }
-            }
+        dataBase.keys.forEach {
+            if (it == query) { resultSearch = dataBase[it]!! }
         }
         printResultOfSearch()
         clearResultSearch()
     }
     private fun printResultOfSearch() {
         if(resultSearch.isNotEmpty()) {
-            println("${resultSearch.size} persons found:\n${resultSearch.joinToString("\n")}\n")
+            println("${resultSearch.size} persons found:")
+            resultSearch.forEach { println(fileData[it]) }
         } else {
-            println("No matching people found.\n")
+            println("No matching people found.")
         }
+        println()
     }
 }
 
