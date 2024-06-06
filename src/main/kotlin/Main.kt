@@ -3,15 +3,19 @@ package search
 import java.io.File
 
 class SearchEngine {
-    private var dataBase = mutableListOf<String>()
+    private var dataBase = mutableMapOf<Int, List<String>>()
     private var resultSearch = mutableListOf<String>()
 
     fun fillDataBase(fileName: String) {
         val workingDirectory = System.getProperty ("user.dir")
         val separator = File.separator
-        val absolutePath = "${workingDirectory}${separator}src${separator}main${separator}resources${separator}$fileName"
+        val absolutePath = "$workingDirectory${separator}src${separator}resources${separator}$fileName"
 
-        File(absolutePath).readLines().forEach { dataBase.add(it) }
+        val textFile = File(absolutePath).readLines()
+
+        for (i in textFile.indices) {
+            dataBase[i] = textFile[i].split(" ")
+        }
     }
     fun search() {
         while (true) {
@@ -33,28 +37,36 @@ class SearchEngine {
     }
 
     private fun printDatabase() {
-        if (dataBase.isNotEmpty()) println("\n=== List of people ===\n${dataBase.joinToString("\n")}\n")
+        if (dataBase.isNotEmpty()) {
+            println("\n=== List of people ===")
+            dataBase.values.forEach { println(it.joinToString(" ")) }
+        }
         else println("\nNo people in data base")
+        println()
     }
     private fun clearResultSearch() = resultSearch.clear()
     private fun find() {
         println("\nEnter a name or email to search all suitable people.")
-        val query = readln()
-        dataBase.forEach { if (it.lowercase().contains(query.lowercase())) { resultSearch.add(it)} }
+        val query = readln().lowercase()
+        dataBase.values.forEach {
+            for (word in it) {
+                if (word.lowercase() == query) { resultSearch.add(it.joinToString(" ")) }
+            }
+        }
         printResultOfSearch()
         clearResultSearch()
     }
     private fun printResultOfSearch() {
         if(resultSearch.isNotEmpty()) {
-            println(resultSearch.joinToString("\n"))
+            println("${resultSearch.size} persons found:\n${resultSearch.joinToString("\n")}\n")
         } else {
-            println("No matching people found.")
+            println("No matching people found.\n")
         }
     }
 }
 
 fun main(args: Array<String>) {
     val searchEngine = SearchEngine()
-    searchEngine.fillDataBase(args[1])
+    searchEngine.fillDataBase(fileName = args[1])
     searchEngine.search()
 }
