@@ -4,8 +4,8 @@ import java.io.File
 
 class SearchEngine {
     private var dataBase = mutableMapOf<String, MutableList<Int>>()
-    private var resultSearch = listOf<Int>()
-    private var fileData = listOf<String>()
+    private var resultSearch = emptySet<Int>()
+    private var fileData = emptyList<String>()
 
     fun fillDataBase(fileName: String) {
         val workingDirectory = System.getProperty ("user.dir")
@@ -38,23 +38,32 @@ class SearchEngine {
                 "1" -> find()
                 "2" -> printDatabase()
                 "0" -> break
-                else -> println("\nIncorrect option! Try again.")
+                else -> println("Incorrect option! Try again.\n")
             }
         }
         println("\nBye!")
     }
     private fun findAll(query: List<String>) {
         query.forEach { word ->
-             if (word in dataBase.keys) {
-                 resultSearch =
-                     if (resultSearch.isEmpty()) dataBase[word]!!
-                     else resultSearch.intersect((dataBase[word] ?: emptySet()).toSet()).toList()
-             }
+             resultSearch =
+                 if (resultSearch.isEmpty()) (dataBase[word] ?: emptySet()).toSet()
+                 else resultSearch.intersect((dataBase[word] ?: emptySet()).toSet())
         }
     }
 
-    private fun findAny(query: List<String>) { TODO() }
-    private fun findNone(query: List<String>) { TODO() }
+    private fun findAny(query: List<String>) {
+        query.forEach { word ->
+            if (resultSearch.isEmpty()) resultSearch = (dataBase[word] ?: emptySet()).toSet()
+            else resultSearch += dataBase[word] ?: emptySet()
+        }
+    }
+    private fun findNone(query: List<String>) {
+        var index = 0
+        repeat(fileData.size) { resultSearch += index++ }
+        query.forEach { word ->
+            resultSearch = resultSearch.filter { it !in (dataBase[word] ?: emptySet()) }.toSet()
+        }
+    }
     private fun printDatabase() {
         if (fileData.isNotEmpty()) {
             println("\n=== List of people ===")
@@ -63,17 +72,22 @@ class SearchEngine {
         else println("\nNo people in data base")
         println()
     }
-    private fun clearResultSearch() = resultSearch.toMutableList().clear()
+    private fun clearResultSearch() {
+        resultSearch = emptySet()
+    }
     private fun find() {
         println("\nSelect a matching strategy: ALL, ANY, NONE")
         val strategy = readln()
+        if (strategy.uppercase() !in listOf("ALL", "ANY", "NONE") ) {
+            println("Unknown strategy!\n")
+            return
+        }
         println("\nEnter a name or email to search all suitable people.")
         val query = readln().lowercase().split(" ")
         when (strategy) {
             "ALL" -> findAll(query)
             "ANY" -> findAny(query)
             "NONE" -> findNone(query)
-            else -> error("Unknown strategy!")
         }
         printResultOfSearch()
         clearResultSearch()
@@ -82,10 +96,10 @@ class SearchEngine {
         if(resultSearch.isNotEmpty()) {
             println("${resultSearch.size} persons found:")
             resultSearch.forEach { println(fileData[it]) }
+            println()
         } else {
-            println("No matching people found.")
+            println("No matching people found.\n")
         }
-        println()
     }
 }
 
