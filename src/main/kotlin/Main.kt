@@ -77,8 +77,8 @@ class SearchEngine {
     }
     private fun find() {
         println("\nSelect a matching strategy: ALL, ANY, NONE")
-        val strategy = readln()
-        if (strategy.uppercase() !in listOf("ALL", "ANY", "NONE") ) {
+        val strategy = readln().uppercase()
+        if (strategy !in listOf("ALL", "ANY", "NONE") ) {
             println("Unknown strategy!\n")
             return
         }
